@@ -73,14 +73,40 @@
     stopMusic() { this.stop("music"); this.stop("crackle"); },
     howl() { if (!this.ctx) return; const o = this.tone(330, 3.2, 0.04, "sine", 520); },
     click() { this.tone(1200, 0.06, 0.05, "square"); },
-    huff() { this.tone(180, 0.25, 0.05, "triangle", 120); },
+    burst(dur, vol, freq) {
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime, src = this.ctx.createBufferSource(); src.buffer = this.noiseBuffer();
+      const f = this.ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq; f.Q.value = 1.5;
+      const g = this.ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(f).connect(g).connect(this.master); src.start(t); src.stop(t + dur + 0.05);
+    },
+    boof(delay = 0) { setTimeout(() => { this.tone(420, 0.16, 0.16, "triangle", 260); this.burst(0.12, 0.12, 900); }, delay); },
+    shiba(state) {
+      if (state === "wake") { this.tone(330, 0.35, 0.12, "triangle", 470); }          // «уф?»
+      else if (state === "happy") { this.boof(); this.boof(180); }                    // «буф-буф»
+      else if (state === "belly") { this.burst(0.5, 0.1, 1400); this.tone(520, 0.4, 0.06, "sine", 380); } // довольное сопение
+      else if (state === "sleep") { this.burst(0.8, 0.06, 600); }                     // зевок
+      else { this.burst(0.2, 0.07, 1200); }                                           // фырк
+    },
+    huff() { this.shiba("sniff"); },
+    unlock() {
+      this.init();
+      if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+      if (!this._started && this.ctx && current && current !== "choose") {
+        this._started = true;
+        if (current === "attic") { if (!curtainClosed) this.rain(); this.fire(); if (record.classList.contains("playing")) this.music(); }
+        if (current === "forest") this.wind();
+      }
+    },
     toggle() {
       this.enabled = !this.enabled;
       if (this.master) this.master.gain.value = this.enabled ? 0.8 : 0;
       const b = $("#soundToggle"); b.textContent = "Звук: " + (this.enabled ? "вкл" : "выкл"); b.setAttribute("aria-pressed", this.enabled);
     }
   };
-  $("#soundToggle").addEventListener("click", () => Sound.toggle());
+  $("#soundToggle").addEventListener("click", () => { Sound.unlock(); Sound.toggle(); });
+  document.addEventListener("pointerdown", () => Sound.unlock(), true);
+  document.addEventListener("keydown", () => Sound.unlock(), true);
 
   /* ================= НАВИГАЦИЯ ================= */
   function go(scene) {
@@ -96,7 +122,7 @@
     if (scene === "attic") { localStorage.setItem("lastScene", "attic"); enterAttic(); }
     if (scene === "forest") { localStorage.setItem("lastScene", "forest"); enterForest(); }
   }
-  $$("[data-go]").forEach(b => b.addEventListener("click", () => { Sound.init(); if (Sound.ctx && Sound.ctx.state === "suspended") Sound.ctx.resume(); go(b.dataset.go); }));
+  $$("[data-go]").forEach(b => b.addEventListener("click", () => { Sound.init(); if (Sound.ctx && Sound.ctx.state === "suspended") Sound.ctx.resume(); Sound._started = true; go(b.dataset.go); }));
   window.addEventListener("popstate", () => go(location.hash.slice(1) || "choose"));
   document.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
@@ -142,9 +168,9 @@
   shiba.addEventListener("click", () => {
     shibaIdx = (shibaIdx + 1) % SHIBA_STATES.length;
     if (shibaIdx === 0) shibaIdx = 1;
-    setShiba(SHIBA_STATES[shibaIdx]); Sound.huff();
+    Sound.unlock(); setShiba(SHIBA_STATES[shibaIdx]); Sound.shiba(SHIBA_STATES[shibaIdx]);
     clearTimeout(shibaTimer);
-    shibaTimer = setTimeout(() => { shibaIdx = 0; setShiba("sleep"); }, 25000);
+    shibaTimer = setTimeout(() => { shibaIdx = 0; setShiba("sleep"); Sound.shiba("sleep"); }, 25000);
   });
   shiba.addEventListener("mouseenter", () => { if (shiba.classList.contains("sleep")) { shiba.classList.add("ear"); setTimeout(() => shiba.classList.remove("ear"), 700); } });
 
@@ -299,8 +325,8 @@
 
   /* ================= ТЕЛЕВИЗОР ================= */
   const TEXT = {
-    attic: { title: "Программа передач", play: "▶ Смотреть здесь", close: "Выключить телевизор", fail: "Сигнал пропал. Открыть в новой вкладке ↗", empty: "Сегодня по телевизору ничего. Добавь фильм в js/films.js", hint: "Выбери фильм в программе справа" },
-    forest: { title: "Найденные кассеты", play: "▶ Включить", close: "Выключить и не оборачиваться", fail: "Помехи. Открыть в новой вкладке ↗", empty: "Здесь пока пусто. Слишком пусто.", hint: "Выбери кассету. Если не боишься." }
+    attic: { title: "Программа передач", play: "▶ Смотреть здесь", close: "Выключить телевизор", fail: "Не грузится? Открыть в новой вкладке ↗", empty: "Сегодня по телевизору ничего. Добавь фильм в js/films.js", hint: "Выбери фильм в программе справа" },
+    forest: { title: "Найденные кассеты", play: "▶ Включить", close: "Выключить и не оборачиваться", fail: "Не грузится? Открыть в новой вкладке ↗", empty: "Здесь пока пусто. Слишком пусто.", hint: "Выбери кассету. Если не боишься." }
   };
   const overlay = $("#tvOverlay"), list = $("#tvList"), player = $("#tvPlayer");
 
@@ -321,13 +347,21 @@
     } catch (e) {}
     return null;
   }
+  function openUrl(u) {
+    try {
+      const x = new URL(u);
+      if (x.pathname.includes("video_ext.php")) return `https://vkvideo.ru/video${x.searchParams.get("oid")}_${x.searchParams.get("id")}`;
+      const m = x.pathname.match(/\/play\/embed\/(\w+)/); if (m && /rutube/.test(x.hostname)) return `https://rutube.ru/video/${m[1]}/`;
+    } catch (e) {}
+    return u;
+  }
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   function openTv(scene) {
     const t = TEXT[scene];
     overlay.className = "tv-overlay " + scene; overlay.hidden = false;
     $("#tvTitle").textContent = t.title; $("#tvClose").textContent = t.close;
-    player.innerHTML = `<p class="tv-hint">${esc(t.hint)}</p>`;
+    player.innerHTML = `<p class="tv-hint">${esc(t.hint)}</p>`; const fbk = $("#tvFallback"); if (fbk) fbk.remove();
     const films = (window.FILMS || []).filter(f => f && f.url); // один общий список для обоих телевизоров
     list.innerHTML = films.length ? "" : `<li><small>${esc(t.empty)}</small></li>`;
     films.forEach(f => {
@@ -349,9 +383,11 @@
     if (embed) {
       player.innerHTML = `<p class="tv-hint">${esc(f.title)}</p><button class="btn" id="playHere">${esc(t.play)}</button>`;
       $("#playHere").addEventListener("click", () => {
-        player.innerHTML = `<iframe src="${esc(embed)}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="${esc(f.title)}"></iframe>`;
-        const fb = document.createElement("a"); fb.className = "btn"; fb.style.cssText = "position:absolute;bottom:12px;right:12px;z-index:2;opacity:.85;font-size:.85rem";
-        fb.href = safeUrl; fb.target = "_blank"; fb.rel = "noopener noreferrer"; fb.textContent = t.fail; player.appendChild(fb);
+        player.innerHTML = `<iframe src="${esc(embed)}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock; clipboard-write" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="${esc(f.title)}"></iframe>`;
+        const old = $("#tvFallback"); if (old) old.remove();
+        const fb = document.createElement("a"); fb.id = "tvFallback"; fb.className = "tv-fallback";
+        fb.href = openUrl(raw); fb.target = "_blank"; fb.rel = "noopener noreferrer"; fb.textContent = t.fail;
+        $("#tvClose").before(fb);
       });
     } else {
       player.innerHTML = `<p class="tv-hint">${esc(f.title)}${f.year ? " (" + esc(f.year) + ")" : ""}</p>${link}${f.type === "embed" ? `<small>Эту ссылку нельзя встроить, открой её в новой вкладке.</small>` : ""}`;
@@ -359,7 +395,7 @@
   }
   function closeTv() {
     if (overlay.hidden) return;
-    overlay.hidden = true; player.innerHTML = "";
+    overlay.hidden = true; player.innerHTML = ""; const fbk = $("#tvFallback"); if (fbk) fbk.remove();
     $("#atticTv").classList.remove("on"); shiba.classList.remove("watching"); updateLight();
     if (ftv.classList.contains("on")) { ftv.classList.remove("on"); fw.classList.remove("tv-on"); if (current === "forest") placeWolf(WOLF_SPOTS[wolfSpot]); }
   }

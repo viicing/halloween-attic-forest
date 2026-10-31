@@ -224,3 +224,6 @@ body.scene-choose .grain{display:none}
 .curtain-btn{position:absolute;left:8%;top:calc(11% + min(19vw,250px) * 1.466 + 44px);width:min(19vw,250px);z-index:6;padding:.55rem .8rem;border-radius:999px;background:rgba(10,8,6,.55);border:1px solid rgba(255,255,255,.1);font:500 .66rem/1 var(--ui);letter-spacing:.14em;text-transform:uppercase;color:#d9d0c2;transition:background .3s}
 .curtain-btn:hover{background:rgba(10,8,6,.8)}
 @media (max-width:760px){.curtain-rod{width:calc(30vw + 80px)}.curtain-btn{width:30vw;top:calc(11% + 30vw * 1.466 + 44px)}}
+
+.tv-fallback{display:block;text-align:center;padding:.6rem;border-radius:999px;font:500 .66rem/1.2 var(--ui);letter-spacing:.1em;text-transform:uppercase;color:#bdb4a7;text-decoration:none;border:1px dashed rgba(255,255,255,.18)}
+.tv-fallback:hover{color:#fff;border-color:rgba(255,255,255,.35)}
