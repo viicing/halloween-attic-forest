@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чердак / Лес — Хэллоуин</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="scene-choose">
+
+<!-- ================= ЭКРАН ВЫБОРА ================= -->
+<section id="choose" class="scene" aria-label="Выбор темы">
+  <h1 class="choose-title">Где проведёшь эту ночь?</h1>
+  <div class="halves">
+    <button class="half half-attic" data-go="attic">
+      <span class="half-art" aria-hidden="true">
+        <span class="mini-window"><span class="mini-lamp"></span></span>
+      </span>
+      <span class="half-label">Остаться на чердаке</span>
+      <span class="half-sub">плед, дождь и старый телевизор</span>
+    </button>
+    <button class="half half-forest" data-go="forest">
+      <span class="half-art" aria-hidden="true">
+        <span class="mini-trees"></span><span class="mini-fog"></span>
+      </span>
+      <span class="half-label">Уйти в лес</span>
+      <span class="half-sub">туман, тишина и что-то между деревьев</span>
+    </button>
+  </div>
+  <button id="resume" class="resume" hidden></button>
+</section>
+
+<!-- ================= ЧЕРДАК ================= -->
+<section id="attic" class="scene" aria-label="Чердак">
+  <div class="attic-room">
+    <div class="attic-wall" aria-hidden="true"></div>
+    <div class="attic-roof" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="attic-floor" aria-hidden="true"></div>
+
+    <!-- окно с дождём -->
+    <div class="window obj" data-label="Окно · проведи, чтобы стереть конденсат">
+      <canvas id="rain"></canvas>
+      <canvas id="fogGlass" aria-label="Запотевшее окно, проведи, чтобы стереть"></canvas>
+      <div class="window-frame" aria-hidden="true"></div>
+      <div class="curtain curtain-l" aria-hidden="true"></div>
+      <div class="curtain curtain-r" aria-hidden="true"></div>
+    </div>
+    <div class="curtain-rod" aria-hidden="true"></div>
+    <button id="curtainBtn" class="curtain-btn" aria-pressed="false">Задёрнуть штору</button>
+    <div class="moon-shaft" aria-hidden="true"></div>
+    <canvas id="dust" class="dust" aria-hidden="true"></canvas>
+
+    <!-- полка со свечами -->
+    <div class="shelf">
+      <button class="candle obj" data-label="Свеча" aria-label="Свеча"><span class="flame"></span><span class="halo"></span></button>
+      <button class="candle tall obj" data-label="Свеча" aria-label="Свеча"><span class="flame"></span><span class="halo"></span></button>
+      <button class="candle short obj" data-label="Свеча" aria-label="Свеча"><span class="flame"></span><span class="halo"></span></button>
+    </div>
+
+    <!-- лампа -->
+    <button id="lamp" class="lamp obj" data-label="Торшер" aria-label="Торшер">
+      <span class="lamp-shade"></span><span class="lamp-stand"></span><span class="lamp-base"></span>
+    </button>
+    <div class="lamp-pool" aria-hidden="true"></div>
+
+    <!-- проигрыватель -->
+    <button id="record" class="record obj" data-label="Проигрыватель" aria-label="Проигрыватель">
+      <span class="plinth"></span>
+      <span class="vinyl"><span class="vlabel"></span></span>
+      <span class="arm"></span>
+    </button>
+
+    <!-- телевизор -->
+    <button id="atticTv" class="tv tv-attic obj" data-label="Телевизор · программа передач" aria-label="Телевизор, открыть программу передач">
+      <span class="tv-body">
+        <span class="tv-screen"><span class="tv-glass"></span></span>
+        <span class="tv-panel"><span class="tv-knob"></span><span class="tv-knob"></span><span class="tv-grille"></span></span>
+      </span>
+      <span class="tv-legs"></span>
+    </button>
+    <div class="tv-spill" aria-hidden="true"></div>
+
+    <!-- плед и сиба -->
+    <div class="rug" aria-hidden="true"></div>
+    <button id="shiba" class="shiba sleep obj" data-label="Тыква. Не будить. (Можно будить.)" aria-label="Сиба Тыква спит, нажми, чтобы разбудить">
+      <svg viewBox="0 0 220 150" aria-hidden="true">
+        <defs>
+          <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9763f"/><stop offset="1" stop-color="#6e3f1f"/></linearGradient>
+          <linearGradient id="knit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a65a2a"/><stop offset="1" stop-color="#5d2f14"/></linearGradient>
+          <linearGradient id="cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eadbc4"/><stop offset="1" stop-color="#b9a68a"/></linearGradient>
+        </defs>
+        <g class="dog">
+          <g class="tail"><path d="M166 94c20-4 30-26 15-34-11-6-21 5-13 13" fill="none" stroke="url(#fur)" stroke-width="13" stroke-linecap="round"/></g>
+          <g class="legs" fill="url(#fur)">
+            <rect x="72" y="104" width="13" height="24" rx="6"/><rect x="97" y="106" width="13" height="22" rx="6"/>
+            <rect x="128" y="106" width="13" height="22" rx="6"/><rect x="150" y="104" width="13" height="24" rx="6"/>
+          </g>
+          <ellipse cx="118" cy="98" rx="58" ry="33" fill="url(#knit)"/>
+          <path d="M92 71c-7 18-7 38 0 55M118 66v64M144 71c7 18 7 38 0 55" stroke="#3e1d0b" stroke-width="2" fill="none" opacity=".45"/>
+          <path d="M70 84c10-20 80-26 104 0" stroke="#e7b27a" stroke-width="1.5" fill="none" opacity=".35"/>
+          <g class="head">
+            <path d="M46 52l7-28 18 19z" fill="url(#fur)"/><path class="ear-r" d="M90 46l11-24 8 28z" fill="url(#fur)"/>
+            <circle cx="74" cy="66" r="31" fill="url(#fur)"/>
+            <ellipse cx="66" cy="81" rx="21" ry="15" fill="url(#cream)"/>
+            <ellipse cx="51" cy="78" rx="3.6" ry="3" fill="#1a110b"/>
+            <g class="eyes-closed" stroke="#1a110b" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M58 63q5 3 10 0"/><path d="M80 61q5 3 10 0"/></g>
+            <g class="eyes-open" fill="#1a110b"><ellipse cx="63" cy="61" rx="3.4" ry="3.8"/><ellipse cx="85" cy="59" rx="3.4" ry="3.8"/><circle cx="64.2" cy="59.6" r="1" fill="#f6e7cf"/><circle cx="86.2" cy="57.6" r="1" fill="#f6e7cf"/></g>
+            <g class="eyes-happy" stroke="#1a110b" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M58 63q5 -4 10 0"/><path d="M80 61q5 -4 10 0"/></g>
+            <path d="M46 47c5-22 52-25 60 0-15-7-44-7-60 0z" fill="url(#knit)"/>
+            <path d="M75 27c0-7 3-11 8-11" stroke="#4d5a32" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M50 40c12-14 40-15 52-2" stroke="#e7b27a" stroke-width="1.2" fill="none" opacity=".4"/>
+          </g>
+        </g>
+      </svg>
+    </button>
+
+    <div class="room-dark" aria-hidden="true"></div>
+  </div>
+  <p class="scene-caption" aria-hidden="true"><span>Чердак</span> · дождь · 23:47</p>
+  <button class="back" data-go="choose" title="Вернуться к выбору">← Выйти с чердака</button>
+</section>
+
+<!-- ================= ЛЕС ================= -->
+<section id="forest" class="scene" aria-label="Лес">
+  <div class="forest-world">
+    <div class="sky" aria-hidden="true"><span class="moon"></span></div>
+    <div class="trees layer-far" data-depth="0.12" aria-hidden="true"></div>
+    <div class="rays" aria-hidden="true"></div>
+    <div class="fog fog-1" aria-hidden="true"></div>
+
+    <!-- волк -->
+    <button id="wolf" class="wolf" aria-label="Волк в тумане" data-label="Он здесь давно. Просто смотрит.">
+      <span class="wolf-inner">
+        <svg class="wolf-body" viewBox="0 0 200 120" aria-hidden="true">
+          <path d="M20 70C25 55 40 48 60 47L120 45C135 44 145 40 152 34L156 21L160 31L166 23L167 36C175 40 182 46 187 53L179 57C172 57 166 56 162 59C160 66 156 72 150 76L148 110L141 110L139 83C130 87 115 87 104 85L100 110L93 110L91 87C80 87 68 85 60 82L56 110L49 110L47 80C40 78 34 76 30 72C24 80 14 88 5 92C12 84 18 76 20 70Z"/>
+        </svg>
+        <span class="wolf-eyes" aria-hidden="true"><i></i><i></i></span>
+      </span>
+    </button>
+
+    <div class="trees layer-mid" data-depth="0.3" aria-hidden="true"></div>
+    <div class="fog fog-2" aria-hidden="true"></div>
+
+    <div class="clearing" aria-hidden="true"></div>
+    <div class="tv-glow" aria-hidden="true"></div>
+    <button id="forestTv" class="tv tv-forest" aria-label="Ржавый телевизор, открыть найденные кассеты" data-label="Включить, если не боишься">
+      <span class="tv-body">
+        <span class="tv-screen"><canvas id="static"></canvas></span>
+        <span class="tv-panel"><span class="tv-knob"></span><span class="tv-knob"></span><span class="tv-grille"></span></span>
+      </span>
+    </button>
+
+    <div class="trees layer-near" data-depth="0.6" aria-hidden="true"></div>
+    <div class="fog fog-3" aria-hidden="true"></div>
+    <div id="flashlight" class="flashlight" aria-hidden="true"></div>
+  </div>
+  <p class="scene-caption" aria-hidden="true"><span>Лес</span> · туман · 00:13</p>
+  <button class="back" data-go="choose" title="Вернуться к выбору">← Обратно по тропе</button>
+</section>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ================= ТЕЛЕВИЗОР (общий оверлей) ================= -->
+<div id="tvOverlay" class="tv-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="tvTitle">
+  <div class="tv-big">
+    <div class="tv-big-screen">
+      <div class="tv-player" id="tvPlayer"><p class="tv-hint" id="tvHint"></p></div>
+      <div class="scanlines" aria-hidden="true"></div>
+    </div>
+    <aside class="tv-guide">
+      <h2 id="tvTitle"></h2>
+      <ul id="tvList"></ul>
+      <button id="tvClose" class="tv-close"></button>
+    </aside>
+  </div>
+</div>
+
+<button id="soundToggle" class="sound" aria-pressed="true">Звук: вкл</button>
+
+<script src="js/films.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
